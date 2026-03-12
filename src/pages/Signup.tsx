@@ -1,0 +1,173 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, User, ArrowRight, Github } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
+
+export const Signup = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [role, setRole] = useState<'client' | 'freelancer'>('client');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success('Compte créé ! Veuillez vérifier votre e-mail.');
+      navigate('/verify-email');
+    } catch (error: any) {
+      toast.error(error.message || 'Erreur lors de l\'inscription');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8 bg-slate-50">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl border border-slate-100">
+        <div className="text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xl mb-4">
+            AW
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Bienvenue sur AlgWork</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Rejoignez la plus grande communauté de freelances en Algérie
+          </p>
+        </div>
+
+        <div className="mt-8 flex gap-4 p-1 rounded-xl bg-slate-100">
+          <button
+            onClick={() => setRole('client')}
+            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${
+              role === 'client' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Je suis un Client
+          </button>
+          <button
+            onClick={() => setRole('freelancer')}
+            className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${
+              role === 'freelancer' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Je suis un Freelance
+          </button>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+          <div className="space-y-4 rounded-md shadow-sm">
+            <div>
+              <label htmlFor="full-name" className="block text-sm font-medium text-slate-700 mb-1">
+                Nom complet
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="full-name"
+                  name="full-name"
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:text-sm"
+                  placeholder="Jean Dupont"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="email-address" className="block text-sm font-medium text-slate-700 mb-1">
+                Adresse e-mail
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:text-sm"
+                  placeholder="votre@email.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-10 pr-3 text-slate-900 placeholder-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 sm:text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-500 text-center">
+            En vous inscrivant, vous acceptez nos{' '}
+            <Link to="/terms" className="text-emerald-600 hover:underline">Conditions Générales</Link> et notre{' '}
+            <Link to="/privacy" className="text-emerald-600 hover:underline">Politique de Confidentialité</Link>.
+          </p>
+
+          <Button type="submit" className="w-full py-6 text-lg" isLoading={loading}>
+            S'inscrire gratuitement
+          </Button>
+        </form>
+
+        <div className="mt-6">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-2 text-slate-500">Ou s'inscrire avec</span>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-3">
+            <Button variant="outline" className="w-full py-6">
+              <Github className="mr-2 h-5 w-5" />
+              GitHub
+            </Button>
+          </div>
+        </div>
+
+        <p className="mt-8 text-center text-sm text-slate-600">
+          Déjà un compte ?{' '}
+          <Link to="/login" className="font-bold text-emerald-600 hover:text-emerald-500">
+            Se connecter
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+};
